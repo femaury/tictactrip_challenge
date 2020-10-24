@@ -9,9 +9,19 @@ import knex from "../../config/knex";
  * 
  * @returns access token
  */
-export const createAccessToken = (email: string) => {
+export const createAccessToken = async (email: string) => {
+    const [user] = await knex.table("users").select("*").where({ email });
+    let id: number;
+
+    if (user) {
+        id = user.id;
+    } else {
+        const newUser = await createUser(email);
+        id = newUser.id;
+    }
+
     return jwt.sign(
-        { email },
+        { id, email },
         config.JWT_SECRET,
         { algorithm: "HS256", expiresIn: config.JWT_EXPIRATION }
     );
@@ -23,5 +33,7 @@ export const createAccessToken = (email: string) => {
  * @param email email of user to create
  */
 export const createUser = async (email: string) => {
-    await knex.table("users").insert({ email })
+    const [user] = await knex.table("users").insert({ email }).returning<{id: number; email: string;}[]>(["id", "email"]);
+
+    return user;
 }

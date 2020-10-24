@@ -32,6 +32,15 @@ export class HTTP401Error extends HTTPClientError {
     }
 }
 
+export class HTTP402Error extends HTTPClientError {
+    readonly statusCode = 402;
+    readonly status = "Payment Required";
+
+    constructor(message: string | object = "You must pay to keep accessing this resource.") {
+        super(message);
+    }
+}
+
 export class HTTP403Error extends HTTPClientError {
     readonly statusCode = 403;
     readonly status = "Forbidden";

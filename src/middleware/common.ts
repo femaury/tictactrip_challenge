@@ -12,4 +12,5 @@ export const handleCors = (router: Router) =>
 export const handleBodyRequestParsing = (router: Router) => {
     router.use(parser.urlencoded({ extended: true }));
     router.use(parser.json());
+    router.use(parser.text());
 };

@@ -1,0 +1,6 @@
+%syntax-version=1.0.0
+%project=tictactrip
+%uri=https://github.com/femaury/tictactrip_challenge
+
+tables/users 2020-10-24T09:27:55Z Felix Maury <felix@femaury.local> # Add table for users.
+tables/limits [tables/users] 2020-10-24T09:35:30Z Felix Maury <felix@femaury.local> # Add table for limits
