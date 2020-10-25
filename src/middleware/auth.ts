@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { HTTP401Error, HTTP402Error } from "../utils/httpErrors";
+import { HTTP401Error, HTTP402Error, HTTPClientError } from "../utils/httpErrors";
 import config from "../config";
 import knex from "../config/knex";
 
@@ -31,7 +31,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         next();
     } catch (e) {
         // TODO: Same as in errorHandler.ts - can't intercept classes that are instance of HTTPClientError...
-        if (e.message == "You have exceeded the free limit of 80 000 words per day.") {
+        if (e instanceof HTTPClientError) {
             return next(e);
         }
         next(new HTTP401Error("Invalid access token."));
@@ -56,7 +56,7 @@ const checkRateLimit = async (id: number, text: string) => {
         if (words + limit.words > 80000) {
             throw new HTTP402Error("You have exceeded the free limit of 80 000 words per day.");
         }
-        await knex.table("limits").update({ words: words + limit.words }).where({ user_id: id});
+        await knex.table("limits").update({ words: words + limit.words }).where({ user_id: id}).andWhere(knex.raw("date = CURRENT_DATE"));
         currentWords += limit.words;
     } else {
         await knex.table("limits").insert({user_id: id, words });
