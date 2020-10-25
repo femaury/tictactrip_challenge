@@ -26,11 +26,13 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         const decoded = jwt.verify(token, config.JWT_SECRET) as IJWT;
         req.credentials = decoded;
 
-        await checkRateLimit(decoded.id, req.body);
+        const currentWords = await checkRateLimit(decoded.id, req.body);
+        req.currentWords = currentWords;
         next();
     } catch (e) {
+        // TODO: Same as in errorHandler.ts - can't intercept classes that are instance of HTTPClientError...
         if (e.message == "You have exceeded the free limit of 80 000 words per day.") {
-            throw e;
+            return next(e);
         }
         next(new HTTP401Error("Invalid access token."));
     }
@@ -48,20 +50,23 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 const checkRateLimit = async (id: number, text: string) => {
     const words = countWords(text);
     const [limit] = await knex.table("limits").select("*").where({ user_id: id }).andWhere(knex.raw("date = CURRENT_DATE"));
+    let currentWords = words;
 
     if (limit) {
         if (words + limit.words > 80000) {
             throw new HTTP402Error("You have exceeded the free limit of 80 000 words per day.");
         }
         await knex.table("limits").update({ words: words + limit.words }).where({ user_id: id});
+        currentWords += limit.words;
     } else {
         await knex.table("limits").insert({user_id: id, words });
     }
+    return currentWords;
 }
 
 function countWords(s: string){
-    s = s.replace(/(^\s*)|(\s*$)/gi,"");//exclude  start and end white-space
-    s = s.replace(/[ ]{2,}/gi," ");//2 or more space to 1
-    s = s.replace(/\n /,"\n"); // exclude newline with a start spacing
-    return s.split(' ').filter(String).length; //- this can also be used
+    s = s.replace(/(^\s*)|(\s*$)/gi,"");
+    s = s.replace(/[ ]{2,}/gi," ");
+    s = s.replace(/\n /,"\n");
+    return s.split(' ').filter(String).length;
 }

@@ -7,8 +7,6 @@ export const notFoundError = () => {
 };
 
 export const clientError = (err: Error, req: Request, res: Response, next: NextFunction) => {
-
-    // TODO: This doesn't intercept HTTP404Error above...
     if (err instanceof HTTPClientError) {
         req.log.warn(err.name + ' - ' + err.message);
         res.status(err.statusCode).send({ status: err.status, message: err.message });
