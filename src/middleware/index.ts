@@ -3,7 +3,13 @@ import {
     handleCors,
     handleBodyRequestParsing
 } from "./common";
-
 import { handleLogging } from "./logger";
+import { handleDocumentation } from "./swagger";
 
-export default [handleHeaders, handleCors, handleBodyRequestParsing, handleLogging];
+export default [
+    handleHeaders,
+    handleCors,
+    handleBodyRequestParsing,
+    handleLogging,
+    handleDocumentation
+];

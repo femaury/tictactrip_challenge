@@ -1,0 +1,86 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Tictactrip Justifier",
+        "description": "API that lets user justify 80 000 words of text a day."
+    },
+    "host": "localhost:3000",
+    "basePath": "/api",
+    "schemes": [
+        "http"
+    ],
+    "paths": {
+        "/token": {
+            "post": {
+                "summary": "Sends back a token on email authentication",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "description": "Bearer token to be used on the /justify endpoint. Valid for 1 day.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "description": "Email address to obtain access token with",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "email"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/justify": {
+            "post": {
+                "summary": "Justifies the text sent in the request body",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "plain/text": {
+                                "description": "Justified text.",
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid access token."
+                    },
+                    "402": {
+                        "description": "Payment required. Maximum limit of 80 000 words per day."
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "plain/text": {
+                            "description": "Text to be justified.",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
