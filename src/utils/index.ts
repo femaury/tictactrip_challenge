@@ -11,6 +11,7 @@ export const applyMiddleware = (middleware: Wrapper[], app: Express) => {
 
 type Route = {
     path: string;
+    absolutePath?: boolean;
     router: Router;
 };
 
@@ -18,6 +19,6 @@ export const applyRoutes = (routes: Route[], app: Express) => {
     const { ROUTE_PREFIX } = config;
 
     for (const route of routes) {
-        app.use(ROUTE_PREFIX + route.path, route.router);
+        app.use((route.absolutePath ? "" : ROUTE_PREFIX) + route.path, route.router);
     }
 };
