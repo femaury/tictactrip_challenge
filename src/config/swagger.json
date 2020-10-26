@@ -5,47 +5,58 @@
         "title": "Tictactrip Justifier",
         "description": "API that lets user justify 80 000 words of text a day."
     },
-    "host": "localhost:3000",
+    "host": "femaury.dev",
     "basePath": "/api",
     "schemes": [
-        "http"
+        "https"
     ],
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        }
+    },
     "paths": {
         "/token": {
             "post": {
                 "summary": "Sends back a token on email authentication",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "token": {
-                                            "description": "Bearer token to be used on the /justify endpoint. Valid for 1 day.",
-                                            "type": "string"
-                                        }
-                                    }
+                "security": [],
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "description": "Email to use to receive token.",
+                                    "type": "string"
                                 }
+                            },
+                            "example": {
+                                "email": "example@email.com"
                             }
                         }
                     }
-                },
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "email": {
-                                        "description": "Email address to obtain access token with",
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "email"
-                                ]
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "example": {
+                                "token": "xxx"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "example": {
+                                "status": "Bad request",
+                                "message": "The 'email' field must be a valid e-mail. Expected: undefined"
                             }
                         }
                     }
@@ -55,28 +66,53 @@
         "/justify": {
             "post": {
                 "summary": "Justifies the text sent in the request body",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "text",
+                        "in": "body",
+                        "schema": {
+                            "type": "string",
+                            "example": "The text you want to justify..."
+                        }
+                    }
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "consumes": [
+                    "text/plain"
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "content": {
-                            "plain/text": {
-                                "description": "Justified text.",
-                                "type": "string"
-                            }
+                        "schema": {
+                            "type": "string",
+                            "example": "Your justified text..."
                         }
                     },
                     "401": {
-                        "description": "Invalid access token."
+                        "description": "Invalid access token.",
+                        "schema": {
+                            "type": "object",
+                            "example": {
+                                "status": "Unauthorized",
+                                "message": "Invalid access token"
+                            }
+                        }
                     },
                     "402": {
-                        "description": "Payment required. Maximum limit of 80 000 words per day."
-                    }
-                },
-                "requestBody": {
-                    "content": {
-                        "plain/text": {
-                            "description": "Text to be justified.",
-                            "type": "string"
+                        "description": "Payment required. Maximum limit of 80 000 words per day.",
+                        "schema": {
+                            "type": "object",
+                            "example": {
+                                "status": "Payment Required",
+                                "message": "You have exceeded the free limit of 80 000 words per day."
+                            }
                         }
                     }
                 }
